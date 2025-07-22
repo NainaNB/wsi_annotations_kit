@@ -1,12 +1,13 @@
 import json
-import math
+import math 
 
 def convert_to_qupath_geojson(input_filename, output_filename):
     """
-    Converts a JSON annotation format to QuPath-compatible GeoJSON format.
+    Converts a specific JSON annotation format to QuPath-compatible GeoJSON format.
+    
     Args:
-        input_filename (str): Path to the input JSON annotation file.
-        output_filename (str): Path to save the output GeoJSON file.
+        input_filename (str): The path to the input JSON annotation file.
+        output_filename (str): The path where the output GeoJSON file will be saved.
     """
     try:
         with open(input_filename, 'r') as f:
@@ -28,16 +29,17 @@ def convert_to_qupath_geojson(input_filename, output_filename):
     for annotation_item in data:
         # Check if the required keys exist
         if "annotation" not in annotation_item or "elements" not in annotation_item["annotation"]:
-            print(f"Skipping item due to missing keys: {annotation_item}")
+            print(f"Skipping an item due to 'annotation' or 'elements' key: {annotation_item.get('_id')}")
             continue
 
-       # Iterate through each geometric element in the annotatio
+       # Iterate through each geometric element in the annotation
         for element in annotation_item['annotation']['elements']:
             geometry_type = element.get('type', '')
             coordinates = []
             if geometry_type == 'polyline' and 'points' in element:
                 # Extract coordinates for the polyline
                 coordinates = [point[:2] for point in element['points']]
+                
                 # Ensure the polygon is closed by making sure the first and last points are the same
                 if element.get('closed') and coordinates and coordinates[0] != coordinates[-1]:
                     coordinates.append(coordinates[0])  # Close the polygon
@@ -95,7 +97,30 @@ def convert_to_qupath_geojson(input_filename, output_filename):
     except IOError:
         print(f"Error: Could not write to file '{output_filename}'.")
 
-
 # Example Usage
+if __name__ == '__main__':
+    # --- Instructions for use ---
+    # This script is designed to be run from the command line.
+    #
+    # Usage:
+    # python your_script_name.py <input_json_file> <output_geojson_file>
+    #
+    # Example:
+    # python converter.py N20_annotations.json N20_output.geojson
+    
+    parser = argparse.ArgumentParser(
+        description="Converts a specific JSON annotation format to Aperio-compatible GeoJSON."
+    )
+    parser.add_argument(
+        "input_file", 
+        help="The path to the input JSON annotation file."
+    )
+    parser.add_argument(
+        "output_file", 
+        help="The path for the output GeoJSON file."
+    )
+    
+    args = parser.parse_args()
+    
 convert_to_qupath_geojson(r"file_path.json",
                           r"your_result.geojson")
